@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: db
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: iot
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d iot"]
+      interval: 5s
+      retries: 10
+    ports:
+      - "20754:5432"
+
+
+  backend:
+    build: ./backend
+    container_name: backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: "db"
+      DB_USER: "root"
+      DB_PASSWORD: "root"
+      DB_NAME: "iot"
+      DB_PORT: "5432"
+    ports:
+      - "10754:8000"
+    restart: unless-stopped
+
+  myapp:
+    build: ./myapp
+    container_name: myapp
+    ports:
+      - "8081:8081"
+    environment:
+      REACT_NATIVE_PACKAGER_HOSTNAME: "0.0.0.0"
+      CHOKIDAR_USEPOLLING: "1"
+    restart: unless-stopped
+
+
+volumes:
+  db_data:

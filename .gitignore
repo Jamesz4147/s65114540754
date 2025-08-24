@@ -1,0 +1,31 @@
+# 🔹 Ignore Node.js dependencies
+node_modules/
+# backend/config/*.json
+
+
+# 🔹 Ignore environment variables
+.env
+
+# # 🔹 Ignore build files (React Native & Backend)
+
+
+# 🔹 Ignore logs and temporary files
+*.log
+logs/
+npm-debug.log*
+yarn-error.log*
+hs_err_*.log
+replay_*.log
+
+# 🔹 Ignore IDE & system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 🔹 Ignore testing & coverage files
+coverage/
+__tests__/
+jest.config.js
+
+
