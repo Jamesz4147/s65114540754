@@ -36,6 +36,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=PathPrefix(`/65114540754`)"
+      - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/65114540754"
+      - "traefik.http.routers.backend.middlewares=backend-stripprefix"
       - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
     restart: unless-stopped
