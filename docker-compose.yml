@@ -15,9 +15,11 @@ services:
       test: ["CMD-SHELL", "pg_isready -U root -d iot"]
       interval: 5s
       retries: 10
-    ports:
-      - "20754:5432"
-
+    # ports:
+    #   - "20754:5432"
+    # networks:
+    #   - default
+    #   - traefik-public
 
   backend:
     build: ./backend
@@ -31,20 +33,45 @@ services:
       DB_PASSWORD: "root"
       DB_NAME: "iot"
       DB_PORT: "5432"
-    ports:
-      - "10754:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
     restart: unless-stopped
+    networks:
+      - default
+      - traefik-public
 
-  myapp:
-    build: ./myapp
-    container_name: myapp
+  # myapp:
+  #   build: ./myapp
+  #   container_name: myapp
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     REACT_NATIVE_PACKAGER_HOSTNAME: "0.0.0.0"
+  #     CHOKIDAR_USEPOLLING: "1"
+  #   restart: unless-stopped
+
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    command:
+      - "--api.insecure=true"            
+      - "--providers.docker=true"        
+      - "--entrypoints.web.address=:10754"  
     ports:
-      - "8081:8081"
-    environment:
-      REACT_NATIVE_PACKAGER_HOSTNAME: "0.0.0.0"
-      CHOKIDAR_USEPOLLING: "1"
+      - "10754:10754"                   
+      - "8080:8080"               
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"  
     restart: unless-stopped
-
+    networks:
+      - traefik-public
 
 volumes:
   db_data:
+
+networks:
+  traefik-public:
+    external: true
