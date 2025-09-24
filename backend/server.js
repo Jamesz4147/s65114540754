@@ -489,23 +489,23 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 
 // ✅ **API ให้ Mobile App ดึงข้อมูลเซ็นเซอร์**
-app.get("/api/gas", (req, res) => {
+app.get("/api/gas", authenticateToken, (req, res) => {
   res.json(gasData);
 });
 
-app.get("/api/heartrate", (req, res) => {
+app.get("/api/heartrate", authenticateToken, (req, res) => {
   res.json(heartrateData);
 });
 
-app.get("/api/water_leak", (req, res) => {
+app.get("/api/water_leak", authenticateToken, (req, res) => {
   res.json(waterLeakStatus);
 });
 
-app.get("/api/bme680", (req, res) => {
+app.get("/api/bme680", authenticateToken, (req, res) => {
   res.json(bmeData);
 });
 
-app.get("/api/door_sensor", (req, res) => {
+app.get("/api/door_sensor", authenticateToken, (req, res) => {
   res.json(doorStatus);
 });
 
