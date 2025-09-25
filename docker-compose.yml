@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:15
@@ -13,11 +15,9 @@ services:
       test: ["CMD-SHELL", "pg_isready -U root -d iot"]
       interval: 5s
       retries: 20
-    # ports:
-    #   - "20754:5432"
-    # networks:
-    #   - default
-    #   - traefik-public
+    restart: unless-stopped
+    networks:
+      - default
 
   backend:
     build: ./backend
@@ -26,52 +26,28 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_HOST: "db"
-      DB_USER: "root"
-      DB_PASSWORD: "root"
-      DB_NAME: "iot"
-      DB_PORT: "5432"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
-      - "traefik.http.routers.backend.rule=PathPrefix(`/s65114540754`)"
-      - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/s65114540754"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      - "traefik.http.routers.backend.middlewares=backend-stripprefix"
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: iot
+      DB_PORT: 5432
     restart: unless-stopped
     networks:
       - default
       - traefik-public
-
-  # myapp:
-  #   build: ./myapp
-  #   container_name: myapp
-  #   ports:
-  #     - "8081:8081"
-  #   environment:
-  #     REACT_NATIVE_PACKAGER_HOSTNAME: "0.0.0.0"
-  #     CHOKIDAR_USEPOLLING: "1"
-  #   restart: unless-stopped
-
-  traefik:
-    image: traefik:latest
-    container_name: traefik
-    command:
-      - "--api.insecure=true"            
-      - "--providers.docker=true"        
-      - "--entrypoints.web.address=:80"  
-    ports:
-      - "80:80"                   
-      - "8080:8080"               
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"  
-    restart: unless-stopped
-    networks:
-      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-router.rule=PathPrefix(`/s65114540754`)"
+      - "traefik.http.routers.backend-router.middlewares=backend-strip-prefix"
+      - "traefik.http.middlewares.backend-strip-prefix.stripprefix.prefixes=/s65114540754"
+      - "traefik.http.services.backend-service.loadbalancer.server.port=8000"
+      - "traefik.docker.network=traefik-public"
 
 volumes:
   db_data:
 
 networks:
+  default:
+    driver: bridge
   traefik-public:
     external: true
